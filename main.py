@@ -26,13 +26,26 @@ def getFormhash(cookies, headers):
         return {'code':1}
 
 # 登录函数
-def login(username, password, formhash, cookies, headers):
+def login(username, password, question, answer, formhash, cookies, headers):
     url = "https://fishc.com.cn/member.php?mod=logging&action=login&loginsubmit=yes&loginhash=LuRQW&inajax=1"
+    questionDict = {
+        "":"0",
+        "母亲的名字":"1",
+        "爷爷的名字":"2",
+        "父亲出生的城市":"3",
+        "您其中一位老师的名字":"4",
+        "您个人计算机的型号":"5",
+        "您最喜欢的餐馆名称":"6",
+        "驾驶执照最后四位数字":"7"
+    }
 
     # md5加密
     md5 = hashlib.md5()
     md5.update(password.encode("utf-8"))
     password = md5.hexdigest()
+
+    # 安全提问处理
+    questionid = questionDict[question]
 
     # post提交数据
     data = {
@@ -40,8 +53,8 @@ def login(username, password, formhash, cookies, headers):
         "referer":"https://fishc.com.cn/",
         "username":username.encode('gbk'),
         "password":password,
-        "questionid":"0",
-        "answer":"",
+        "questionid":questionid,
+        "answer":answer.encode("gbk"),
         "cookietime":"2592000"
     }
 
@@ -73,7 +86,7 @@ def saveLog(msg):
         f.write(time.ctime()+"  "+msg+"\n")
 
 # 主函数
-def main(username, password):
+def main(username, password, question, answer):
     # 初始化变量
     cookies = {}
     headers = {
@@ -89,7 +102,7 @@ def main(username, password):
         return username+'登录formhash获取失败'
 
     # 登录
-    res = login(username,password,formhash,cookies, headers)
+    res = login(username,password,question,answer,formhash,cookies, headers)
     if res['code'] == 0:
         cookies = res['cookies']
     else:
@@ -113,5 +126,9 @@ def main(username, password):
 # 用户名和密码设置
 username = "用户名"
 password = "密码"
+# 安全提问的名称,无安全提问可设置为空
+question = ""
+# 安全提问的答案,无安全提问可设置为空
+answer = ""
 # 签到并保存日志
-saveLog(main(username,password))
+saveLog(main(username,password,question,answer))
